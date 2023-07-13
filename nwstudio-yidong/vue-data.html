@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>数据响应式原理</title>
+	</head>
+	<body>
+		<h1>vue2 的数据响应式原理 Object.defineProperties()</h1>
+		<h3 id="num1">1</h3>
+		<button id="btn1">数字+1</button>
+
+		<hr />
+		<h1>vue3 的数据响应式原理 new Proxy()创建代理</h1>
+		<h3 id="num2">1</h3>
+		<button id="btn2">数字+1</button>
+		<script>
+			/**vue2 的 Object.defineProperties() */
+			/**模拟vue2的数据声明方法 */
+			/**data(){return{...}} */
+			var data = {
+				num: 1,
+			};
+			/**methods:{...} */
+			btn1.onclick = function () {
+				data.num++;
+			};
+			//vue2 的做法 监听data对象，一旦data中的属性变化，则更新UI
+			Object.defineProperties(data, {
+				_num: { value: 1, writable: true },
+				num: {
+					get() {
+						//访问
+						return this._num;
+					},
+					set(newValue) {
+						//传入新值
+						this._num = newValue;
+						//顺便完成DOM更新
+						num1.innerHTML = newValue;
+					},
+				},
+			});
+		</script>
+		<script>
+			/**vue3 数据响应式原理 */
+			var v3data = {
+				num2: 1,
+			};
+			var v3dataProxy = new Proxy(v3data, {
+				//当用户设置v3dataProxy的属性时，例如：v3dataProxy.num2 = 3 时 将会执行该set方法
+				set(obj, key, value) {
+					//代理的目标对象
+					//要设置的属性值的属性名
+					//要设置的属性值的属性值
+					obj[key] = value;
+
+					//顺便更新DOM
+					num2.innerHTML = value;
+				},
+				get(obj, key) {
+					//访问
+					return obj[key];
+				},
+			});
+			btn2.onclick = function () {
+				v3data.num2++;
+			};
+		</script>
+	</body>
+</html>
